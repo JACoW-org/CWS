@@ -1,0 +1,120 @@
+google.load('visualization', '1', {packages: ['corechart']});
+
+function drawVisualization() {
+ var data = new google.visualization.DataTable();
+ data.addColumn('date', 'Date');
+ data.addColumn('number', 'Number of Registrants');
+
+ data.addRow([new Date(2012,9,23),1]);
+ data.addRow([new Date(2012,9,25),2]);
+ data.addRow([new Date(2012,10,20),3]);
+ data.addRow([new Date(2012,10,21),4]);
+ data.addRow([new Date(2012,10,22),6]);
+ data.addRow([new Date(2012,10,23),8]);
+ data.addRow([new Date(2012,10,27),16]);
+ data.addRow([new Date(2012,10,28),19]);
+ data.addRow([new Date(2012,10,29),24]);
+ data.addRow([new Date(2012,10,30),39]);
+ data.addRow([new Date(2012,11,1),43]);
+ data.addRow([new Date(2012,11,2),45]);
+ data.addRow([new Date(2012,11,3),63]);
+ data.addRow([new Date(2012,11,4),121]);
+ data.addRow([new Date(2012,11,5),159]);
+ data.addRow([new Date(2012,11,6),161]);
+ data.addRow([new Date(2012,11,7),162]);
+ data.addRow([new Date(2012,11,10),163]);
+ data.addRow([new Date(2012,11,11),164]);
+ data.addRow([new Date(2012,11,14),168]);
+ data.addRow([new Date(2012,11,15),169]);
+ data.addRow([new Date(2012,11,17),173]);
+ data.addRow([new Date(2012,11,18),175]);
+ data.addRow([new Date(2012,11,20),176]);
+ data.addRow([new Date(2012,11,21),181]);
+ data.addRow([new Date(2012,11,25),182]);
+ data.addRow([new Date(2012,11,30),183]);
+ data.addRow([new Date(2013,0,1),184]);
+ data.addRow([new Date(2013,0,3),185]);
+ data.addRow([new Date(2013,0,4),187]);
+ data.addRow([new Date(2013,0,7),193]);
+ data.addRow([new Date(2013,0,8),197]);
+ data.addRow([new Date(2013,0,9),198]);
+ data.addRow([new Date(2013,0,10),199]);
+ data.addRow([new Date(2013,0,11),200]);
+ data.addRow([new Date(2013,0,14),205]);
+ data.addRow([new Date(2013,0,15),208]);
+ data.addRow([new Date(2013,0,16),214]);
+ data.addRow([new Date(2013,0,17),216]);
+ data.addRow([new Date(2013,0,18),220]);
+ data.addRow([new Date(2013,0,20),221]);
+ data.addRow([new Date(2013,0,21),222]);
+ data.addRow([new Date(2013,0,22),224]);
+ data.addRow([new Date(2013,0,23),226]);
+ data.addRow([new Date(2013,0,24),229]);
+ data.addRow([new Date(2013,0,25),231]);
+ data.addRow([new Date(2013,0,26),232]);
+ data.addRow([new Date(2013,0,28),240]);
+ data.addRow([new Date(2013,0,29),250]);
+ data.addRow([new Date(2013,0,30),255]);
+ data.addRow([new Date(2013,0,31),258]);
+ data.addRow([new Date(2013,1,1),260]);
+ data.addRow([new Date(2013,1,2),261]);
+ data.addRow([new Date(2013,1,3),263]);
+ data.addRow([new Date(2013,1,4),266]);
+ data.addRow([new Date(2013,1,5),272]);
+ data.addRow([new Date(2013,1,6),276]);
+ data.addRow([new Date(2013,1,7),280]);
+ data.addRow([new Date(2013,1,8),286]);
+ data.addRow([new Date(2013,1,11),296]);
+ data.addRow([new Date(2013,1,12),300]);
+ data.addRow([new Date(2013,1,13),302]);
+ data.addRow([new Date(2013,1,14),309]);
+ data.addRow([new Date(2013,1,15),313]);
+ data.addRow([new Date(2013,1,16),314]);
+ data.addRow([new Date(2013,1,17),315]);
+ data.addRow([new Date(2013,1,18),323]);
+ data.addRow([new Date(2013,1,19),325]);
+ data.addRow([new Date(2013,1,20),331]);
+ data.addRow([new Date(2013,1,21),345]);
+ data.addRow([new Date(2013,1,22),354]);
+ data.addRow([new Date(2013,1,25),360]);
+ data.addRow([new Date(2013,1,26),372]);
+ data.addRow([new Date(2013,1,27),383]);
+ data.addRow([new Date(2013,1,28),399]);
+ data.addRow([new Date(2013,2,1),422]);
+ data.addRow([new Date(2013,2,2),430]);
+ data.addRow([new Date(2013,2,3),432]);
+ data.addRow([new Date(2013,2,4),456]);
+ data.addRow([new Date(2013,2,5),483]);
+ data.addRow([new Date(2013,2,6),496]);
+ data.addRow([new Date(2013,2,7),520]);
+ data.addRow([new Date(2013,2,8),545]);
+ data.addRow([new Date(2013,2,9),558]);
+ data.addRow([new Date(2013,2,10),561]);
+ data.addRow([new Date(2013,2,11),594]);
+ data.addRow([new Date(2013,2,12),654]);
+ data.addRow([new Date(2013,2,13),828]);
+ data.addRow([new Date(2013,2,14),850]);
+ data.addRow([new Date(2013,2,15),863]);
+ data.addRow([new Date(2013,2,16),865]);
+ data.addRow([new Date(2013,2,17),870]);
+ data.addRow([new Date(2013,2,18),918]);
+ data.addRow([new Date(2013,2,19),936]);
+ data.addRow([new Date(2013,2,20),946]);
+ data.addRow([new Date(2013,2,21),954]);
+ data.addRow([new Date(2013,2,22),961]);
+ data.addRow([new Date(2013,2,23),962]);
+ data.addRow([new Date(2013,2,24),965]);
+ data.addRow([new Date(2013,2,25),977]);
+ data.addRow([new Date(2013,2,26),981]);
+ data.addRow([new Date(2013,2,27),988]);
+ data.addRow([new Date(2013,2,28),1000]);
+
+
+ new google.visualization.LineChart(document.getElementById('chart_Registrants')).
+	draw(data, {curveType: 'function', 
+		width: 550, height: 200, legend: 'none', colors: ['#990000'],
+		vAxis: {title: 'Registrants', maxValue: 1000 }}
+		);
+}
+
+google.setOnLoadCallback(drawVisualization);
