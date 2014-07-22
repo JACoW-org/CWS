@@ -1,6 +1,6 @@
 <?php
 
-// 2014.02.27 by Stefano.Deiuri@Elettra.Eu
+// 2014.07.18 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -19,7 +19,7 @@ class SPMS_Programme {
 	
 	
 	$this->cfg['path'] =OUT_PATH .'/ScientificProgramme';
-	$this->cfg['cache_dir'] =TMP_PATH .'/ScientificProgramme';
+	$this->cfg['cache_dir'] =TMP_PATH .'/scientific_programme';
 	$this->cfg['images'] ='ScientificProgramme/images';
 	$this->cfg['programme_base_url'] ='index.php?n=Main.ScientificProgramme';
 	$this->cfg['skip_session'] =false;
@@ -30,8 +30,8 @@ class SPMS_Programme {
 
 	$this->cfg['tab_w'] =" width='700'";
 	
-	$this->cfg['abstracts_fname'] ='spms.abstracts';
-	$this->cfg['programme_fname'] ='spms.programme';
+	$this->cfg['abstracts_fname'] =DATA_PATH .'/scientific_programme/spms-abstracts.json';
+	$this->cfg['programme_fname'] =DATA_PATH .'/scientific_programme/spms-programme.json';
  }
 
  //-----------------------------------------------------------------------------
@@ -63,23 +63,24 @@ class SPMS_Programme {
  //-----------------------------------------------------------------------------
  function save() {
 	echo "\n# Save obj data: ";
- 
-	$fp =fopen( $this->cfg['cache_dir'] .'/' .$this->cfg['programme_fname'], 'w' );
-	fwrite( $fp, serialize( $this->programme ));
-	fclose( $fp );
+	
+	file_write_json( $this->cfg['programme_fname'], $this->programme );
 	echo "programme, ";
-
-	$fp =fopen( $this->cfg['cache_dir'] .'/' .$this->cfg['abstracts_fname'], 'w' );
-	fwrite( $fp, serialize( $this->abstracts ));
-	fclose( $fp );
+	
+	file_write_json( $this->cfg['abstracts_fname'], $this->abstracts );
 	echo "abstracts.\n";
  }
  
  
  //-----------------------------------------------------------------------------
- function load( $_programme =true, $_abstracts =true) {
-  	if ($_abstracts) $this->abstracts =unserialize( implode( '', file( $this->cfg['cache_dir'] .'/' .$this->cfg['abstracts_fname'] )));
- 	if ($_programme) $this->programme =unserialize( implode( '', file( $this->cfg['cache_dir'] .'/' .$this->cfg['programme_fname'] )));
+ function load( $_programme =true, $_abstracts =true ) {
+  	if ($_abstracts) {
+		$this->abstracts =file_read_json( $this->cfg['abstracts_fname'] );
+	}
+	
+ 	if ($_programme) {
+		$this->programme =file_read_json( $this->cfg['programme_fname'] );
+	}
  }
 
  
@@ -120,34 +121,32 @@ class SPMS_Programme {
 	}	
 
 	sort( $this->programme['classes'] );
-
  }
 
  //-----------------------------------------------------------------------------
  function load_session( &$xml ) {
   foreach ($xml->children() as $S) {
+    $scode =(string)$S->name->attributes()->abbr;
+    $date  =(string)$S->date;
+    $btime =(string)$S->date->attributes()->btime;
 
-	$scode =(string)$S->name->attributes()->abbr;
-	$date  =(string)$S->date;
-	$btime =(string)$S->date->attributes()->btime;
-
-	if (@$S->chairs->chair->iname) {
+    if (@$S->chairs->chair->iname) {
 		$chair =$S->chairs->chair->iname .' ' .$S->chairs->chair->lname;
 		$chair_inst =(string)$S->chairs->chair->institutions->institute->full_name;
-	} else {
+    } else {
 		$chair =false;
 		$chair_inst =false;
-	}
+    }
 
-	$room =substr($scode,-2) == 'GM' ? 'GM' : substr($scode,-1);
+    $room =substr($scode,-2) == 'GM' ? 'GM' : substr($scode,-1);
 
-	$this->programme['days'][$date]['999999_END'] ='END';
-	$session =&$this->programme['days'][$date]["{$btime}_{$room}_{$scode}"];
+    $this->programme['days'][$date]['999999_END'] ='END';
+    $session =&$this->programme['days'][$date]["{$btime}_{$room}_{$scode}"];
 
-	$sstime =adjust_time( (string)$S->date->attributes()->btime ); // Session Start TIME
-	$setime =adjust_time( (string)$S->date->attributes()->etime );
-	
-	$session =array(
+    $sstime =adjust_time( (string)$S->date->attributes()->btime ); // Session Start TIME
+    $setime =adjust_time( (string)$S->date->attributes()->etime );
+
+    $session =array(
 		'code' =>$scode,
 		'type' =>strtolower((string)$S->location->attributes()->type),
 		'class' =>(string)$S->main_class,
@@ -162,67 +161,82 @@ class SPMS_Programme {
 		'location' =>(string)$S->location,
 		'papers' =>false
 		);
-	
-	echo "## Session info: " .$S->date ." ". $sstime ." > " .$setime ." ($session[type])\n"
-		."## Get ".count($S->children()->papers->paper)." papers: ";
 
-	foreach($S->children()->papers->paper as $P) {
-		$pcode =(string)$P->code;
+    echo "## Session info: " .$S->date ." ". $sstime ." > " .$setime ." ($session[type])\n"
+            ."## Get ".count($S->children()->papers->paper)." papers: ";
 
-		echo '.';
+    foreach($S->children()->papers->paper as $P) {
+		foreach($P->children()->program_codes->program_code as $PC) {
+            $pcode =(string)$PC->code;
 
-		$this->abstracts[$pcode] =array(
-			'text' =>(string)$P->abstract,
-			'footnote' =>(string)$P->footnote,
-			'agency' =>(string)$P->agency
-			);
-
-		$author =false;
-		$author_inst =false;
-		$type =(string)$P->presentation;
-
-//		if ($type == 'Contributed Oral' || $type == 'Invited Oral') {
-		if (strpos(strtolower($type, 'oral')) !== false) {
-			$this->get_author( $P, 'Presenter', $author, $author_inst );
-			if (!$author) $this->get_author( $P, 'Speaker', $author, $author_inst );
-			if (!$author) $this->get_author( $P, 'Primary Author', $author, $author_inst );
-		} else $this->get_author( $P, 'Primary Author', $author, $author_inst );
-		
-		if (!$author) echo "(Warning, no Author)";
-
-		$pclass =(string)$P->main_class;
-
-		$pstime =adjust_time( (string)$P->start_time );
-		$petime =adjust_time( (string)$P->start_time, (string)$P->duration );
-		
-		if (!$pstime && ($session['type'] != 'poster')) $pstime =$sstime;
-		
-		$session['papers'][$pcode] =array(
-			'class' =>$pclass,
-			'title' =>(string)$P->title,
-			'author' =>$author,
-			'author_inst' =>$author_inst,
-			'type' =>(string)$P->presentation,
-			'time_from' =>$pstime,
-			'time_to' =>$petime,
-			'tsz_from' =>strtotime( "$date $pstime" ) +$this->cfg['tsz_adjust'],
-			'tsz_to' =>strtotime( "$date $petime" ) +$this->cfg['tsz_adjust'],
-			'abstract' =>(strlen($this->abstracts[$pcode]['text'])>10)
-			);
-
-		if (!in_array( $pclass, $this->programme['classes'] )) array_push( $this->programme['classes'], $pclass );
+			if ($pcode && strpos( $pcode, $scode ) === 0) {
+				echo '.';
+				
+				$this->abstracts[$pcode] =array(
+					'text' =>(string)$P->abstract,
+					'footnote' =>(string)$P->footnote,
+					'agency' =>(string)$P->agency
+					);
+				
+				$author =false;
+				$author_inst =false;
+				$type =strtolower((string)$PC->presentation);
+				
+				if (strpos($type, 'oral') !== false) {
+					$this->get_author( $P, 'Presenter', $author, $author_inst );
+					if (!$author) $this->get_author( $P, 'Speaker', $author, $author_inst );
+					if (!$author) $this->get_author( $P, 'Primary Author', $author, $author_inst );
+				} else $this->get_author( $P, 'Primary Author', $author, $author_inst );
+				
+				if (!$author) echo "(Warning, no Author)";
+				
+				$pclass =(string)$P->main_class;
+				
+				$pstime =adjust_time( (string)$PC->start_time );
+				$petime =adjust_time( (string)$PC->start_time, (string)$PC->duration );
+				
+				if (!$pstime && ($session['type'] != 'poster')) $pstime =$sstime;
+				
+				$session['papers'][$pcode] =array(
+					'class' =>$pclass,
+					'title' =>(string)$P->title,
+					'author' =>$author,
+					'author_inst' =>$author_inst,
+					'type' =>$type,
+					'time_from' =>$pstime,
+					'time_to' =>$petime,
+					'tsz_from' =>strtotime( "$date $pstime" ) +$this->cfg['tsz_adjust'],
+					'tsz_to' =>strtotime( "$date $petime" ) +$this->cfg['tsz_adjust'],
+					'abstract' =>(strlen($this->abstracts[$pcode]['text'])>10),
+					'abstract_id' =>(string)$P->abstract_id
+					);
+					
+				if ($type == 'poster') {
+					$this->get_author( $P, 'Presenter', $author, $author_inst, false );
+					$session['papers'][$pcode]['presenter'] =($author ? "$author - $author_inst" : false);
+				}
+				
+				if (!in_array( $pclass, $this->programme['classes'] )) array_push( $this->programme['classes'], $pclass );
+			}
+		}
 	}
-	
-	echo "\n";
-	}
+
+    echo "\n";
+    }
  }
 
  //-----------------------------------------------------------------------------
- function get_author( &$_P, $_type, &$_author, &$_author_inst ) {
-	foreach ($_P->contributors->children() as $A) {
+ function get_author( &$_P, $_type, &$_author, &$_author_inst, $_full_inst =true ) {
+    foreach ($_P->contributors->children() as $A) {
 		if ($A->attributes()->type == $_type) {
-			$_author =$A->iname .$A->lname;
-			$_author_inst =(string)$A->institutions->institute->full_name;
+			$_author =$A->iname .' ' .$A->lname;
+			
+			if ($_full_inst) {
+				$_author_inst =(string)$A->institutions->institute->full_name;
+			} else {
+				$_author_inst =(string)$A->institutions->institute->full_name->attributes()->abbrev;
+				if (!$_author_inst) $_author_inst =(string)$A->institutions->institute->full_name;
+			}
 			return true;
 		}
 	}
@@ -231,7 +245,6 @@ class SPMS_Programme {
 	$_author_inst =false;
 	return false;
  }
-
  
  //-----------------------------------------------------------------------------
  function make_abstracts() {
@@ -303,7 +316,7 @@ END:VTIMEZONE
 
 		foreach ($sessions as $id =>$S) {
 
-			if (strpos(strtolower($S['type']), 'poster') !== false) {
+			if (strpos($S['type'], 'poster') !== false) {
 				$uid ='postersession-'.md5( print_r($S,true) );
 				echo 'P';
 

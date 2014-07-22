@@ -9,7 +9,7 @@ ${addrow}
 
  new google.visualization.LineChart(document.getElementById('chart_${var}')).
 	draw(data, {curveType: 'function', 
-		width: ${width}, height: ${height}, legend: 'none', colors: ['#990000'],
+		width: ${width}, height: ${height}, legend: 'none', colors: ['${color1}'],
 		vAxis: {title: '${var}', maxValue: ${maxvalue} }}
 		);
 }

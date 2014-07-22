@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-// 2013.02.27 by Stefano.Deiuri@Elettra.Eu
+// 2013.05.28 by Stefano.Deiuri@Elettra.Eu
 
 if (in_array( '--help', $argv )) {
 	echo "Program options:\n"
@@ -13,17 +13,16 @@ if (in_array( '--help', $argv )) {
 }
 
 require( '../conference.php' );
-require( '../libs/spms_programme-1.4.class.php' );
+require( '../libs/jacow-1.0.lib.php' );
+require( '../libs/spms_programme-1.5.class.php' );
 
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class IPAC13_Programme extends SPMS_Programme {
+/*
+class IPAC14_Programme extends SPMS_Programme {
  function session( &$ps, $sid, &$html ) {
 	$page =false;
 	
-	if ($ps[0] == 'WEODB1') {
-		$html['_EMPTY'] ="<td width='##W##' class='room2 continue'>&nbsp;</td>";
+	if ($ps[0] == 'WEOCA') {
+		$html['_EMPTY'] ="<td width='##W##' class='roomB continue'>&nbsp;</td>";
 		$ps =array( $ps[0], 'EMPTY' ); 
 	}
 
@@ -33,7 +32,10 @@ class IPAC13_Programme extends SPMS_Programme {
  }
 }
 
-$Programme =new IPAC13_Programme;
+$Programme =new IPAC14_Programme;
+*/
+
+$Programme =new SPMS_Programme;
 
 // Config script
 //$Programme->config( 'path', '../programme' );
@@ -56,11 +58,8 @@ if (in_array( '--skip-xml', $argv )) {
 	$Programme->save();
 }
 
-
-
-
 $Programme->make();
 $Programme->make_abstracts();
-$Programme->make_ics();
+//$Programme->make_ics();
 
 ?>

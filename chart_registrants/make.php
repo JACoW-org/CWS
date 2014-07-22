@@ -17,6 +17,7 @@ $Chart =new SPMS_Chart( SPMS_URL );
 
 $Chart->Config( 'width', CHART_WIDTH );
 $Chart->Config( 'height', CHART_HEIGHT );
+$Chart->Config( 'color1', CHART_COLOR1 );
 $Chart->Config( 'skip_format_check', true );
 
 $Chart->GoogleChart( 'regstats', false, 'Registrants' );

@@ -15,8 +15,9 @@ require( '../libs/spms_chart-1.1.class.php' );
 
 $Chart =new SPMS_Chart( SPMS_URL, PASSPHRASE );
 
-$Chart->Config( 'width', CHART_WIDTH );
+$Chart->Config( 'width',  CHART_WIDTH );
 $Chart->Config( 'height', CHART_HEIGHT );
+$Chart->Config( 'color1', CHART_COLOR1 );
 
 $Chart->GoogleChart( 'filesuploaded', 'papercode', 'Papers' );
 
