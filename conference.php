@@ -9,6 +9,7 @@ define( 'PASSPHRASE', '' );
 
 define( 'CHART_WIDTH', 550 );
 define( 'CHART_HEIGHT', 200 );
+define( 'CHART_COLOR1', '#FF0000' );
 
 define( 'CONF_NAME', 'CONF????' );
 
