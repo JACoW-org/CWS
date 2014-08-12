@@ -1,6 +1,6 @@
 <?php
 
-// 2014.07.18 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
+// 2014.08.12 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ class SPMS_Programme {
 
  
  //-----------------------------------------------------------------------------
- function load_xml( $_url ) {
+ function load_xml( $_url, $_verbose =true ) {
 	$wget_options =$this->cfg['wget_options'];
  
 	$path =$this->cfg['cache_dir'];
@@ -104,9 +104,9 @@ class SPMS_Programme {
 	$t =count($sessions);
 	foreach ($sessions as $code =>$title) {
 		if ($this->cfg['skip_session'] && in_array( $code, $this->cfg['skip_session'] )) {
-			echo "# Skip session $code ($title)\n";
+			if ($_verbose) echo "# Skip session $code ($title)\n";
 		} else {
-			echo "# $n/$t Get session $code ($title)\n";
+			if ($_verbose) echo "# $n/$t Get session $code ($title)\n";
 			$xml_fname ="$code.xml";
 			if ($this->cfg['wget']) {
 				$url ="$_url/xml2.session?sid=$code";
@@ -114,7 +114,7 @@ class SPMS_Programme {
 				system( "wget $wget_options -O $path/$xml_fname $url" );
 			}
 			$xml =simplexml_load_file( "$path/$xml_fname" );
-			$this->load_session( $xml );
+			$this->load_session( $xml, $_verbose );
 	
 			$n ++;
 		}
@@ -124,7 +124,7 @@ class SPMS_Programme {
  }
 
  //-----------------------------------------------------------------------------
- function load_session( &$xml ) {
+ function load_session( &$xml, $_verbose =true ) {
   foreach ($xml->children() as $S) {
     $scode =(string)$S->name->attributes()->abbr;
     $date  =(string)$S->date;
@@ -162,7 +162,7 @@ class SPMS_Programme {
 		'papers' =>false
 		);
 
-    echo "## Session info: " .$S->date ." ". $sstime ." > " .$setime ." ($session[type])\n"
+    if ($_verbose) echo "## Session info: " .$S->date ." ". $sstime ." > " .$setime ." ($session[type])\n"
             ."## Get ".count($S->children()->papers->paper)." papers: ";
 
     foreach($S->children()->papers->paper as $P) {
@@ -170,7 +170,7 @@ class SPMS_Programme {
             $pcode =(string)$PC->code;
 
 			if ($pcode && strpos( $pcode, $scode ) === 0) {
-				echo '.';
+				if ($_verbose) echo '.';
 				
 				$this->abstracts[$pcode] =array(
 					'text' =>(string)$P->abstract,
@@ -188,7 +188,7 @@ class SPMS_Programme {
 					if (!$author) $this->get_author( $P, 'Primary Author', $author, $author_inst );
 				} else $this->get_author( $P, 'Primary Author', $author, $author_inst );
 				
-				if (!$author) echo "(Warning, no Author)";
+				if ($_verbose && !$author) echo "(Warning, no Author)";
 				
 				$pclass =(string)$P->main_class;
 				
@@ -221,7 +221,7 @@ class SPMS_Programme {
 		}
 	}
 
-    echo "\n";
+    if ($_verbose) echo "\n";
     }
  }
 

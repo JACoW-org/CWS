@@ -1,9 +1,10 @@
 <?php
 
-// 2014.07.18 by Stefano.Deiuri@Elettra.Eu
+// 2014.08.12 by Stefano.Deiuri@Elettra.Eu
 
 require( '../conference.php' );
 require( '../libs/jacow-1.0.lib.php' );
+require( '../libs/spms_programme-1.5.class.php' );
 
 $PPOBJ =new SPMS_PosterPolice;
 $PPOBJ->load();
@@ -377,9 +378,24 @@ class SPMS_PosterPolice {
 
 	if (!$import) return;
  
-	$this->programme =file_read_json( $this->cfg['programme_fname'] );
-	
-	foreach ($this->programme->days as $day =>$odss) { // ObjDaySessions
+	if (!isset($_GET['importxml'])) {
+		echo "<pre>\n\nThe first execution of this script could take a long time, please wait..\n\n<a href='index.php?importxml=1'>Continue</a></pre>";
+		die;
+	}
+  
+	$PRG =new SPMS_Programme;
+	if (!file_exists( TMP_PATH .'/scientific_programme/spms_summary.xml' )) {
+		echo "<pre>\nImport data from SPMS... ";
+		$PRG->load_xml( SPMS_URL, false );
+		$PRG->save();
+		echo "OK\n\n<a href='index.php'>Continue</a></pre>";
+		
+		die;
+	} else {
+		$PRG->load( true, false );
+	}
+
+	foreach ($PRG->programme->days as $day =>$odss) { // ObjDaySessions
 		foreach ($odss as $id =>$os) { // ObjSession
 			if (strpos( $os->type, 'oster' ) !== false) {
 				$sid =$os->code;
