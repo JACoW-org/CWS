@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-// 2013.05.28 by Stefano.Deiuri@Elettra.Eu
+// 2015.01.27 by Stefano.Deiuri@Elettra.Eu
 
 if (in_array( '--help', $argv )) {
 	echo "Program options:\n"
@@ -48,8 +48,6 @@ if (in_array( '--cleanup', $argv )) { return $Programme->cleanup(); }
 
 // Show configuration
 $Programme->config();
-
-$Programme->prepare();
 
 if (in_array( '--skip-xml', $argv )) {
 	$Programme->load();

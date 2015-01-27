@@ -1,6 +1,6 @@
 <?php
 
-// 2014.08.12 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
+// 2015.01.27 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -18,8 +18,9 @@ class SPMS_Programme {
 	$this->programme['classes'] =array();
 	
 	
-	$this->cfg['path'] =OUT_PATH .'/ScientificProgramme';
+	$this->cfg['out_dir'] =OUT_PATH .'/ScientificProgramme';
 	$this->cfg['cache_dir'] =TMP_PATH .'/scientific_programme';
+	$this->cfg['data_dir']  =DATA_PATH .'/scientific_programme';
 	$this->cfg['images'] ='ScientificProgramme/images';
 	$this->cfg['programme_base_url'] ='index.php?n=Main.ScientificProgramme';
 	$this->cfg['skip_session'] =false;
@@ -30,8 +31,10 @@ class SPMS_Programme {
 
 	$this->cfg['tab_w'] =" width='700'";
 	
-	$this->cfg['abstracts_fname'] =DATA_PATH .'/scientific_programme/spms-abstracts.json';
-	$this->cfg['programme_fname'] =DATA_PATH .'/scientific_programme/spms-programme.json';
+	$this->cfg['abstracts_fname'] =$this->cfg['data_dir'] .'/spms-abstracts.json';
+	$this->cfg['programme_fname'] =$this->cfg['data_dir'] .'/spms-programme.json';
+	
+	$this->prepare();
  }
 
  //-----------------------------------------------------------------------------
@@ -46,17 +49,28 @@ class SPMS_Programme {
  
  //-----------------------------------------------------------------------------
  function prepare() {
-	$path =$this->cfg['path'];
-	if (!file_exists( $path )) {
-		echo "Create output structure and base files\n";
+	$dir =$this->cfg['out_dir'];
+	if (!file_exists( $dir )) {
+		echo "Create OUTPUT structure and copy default files\n";
 		exec( "cp -r files/* " .OUT_PATH );
-		mkdir( $this->cfg['cache_dir'] );
+	}
+	
+	$dir =$this->cfg['cache_dir'];
+	if (!file_exists( $dir )) {
+		echo "Create CACHE directory\n";
+		mkdir( $dir );
+	}
+
+	$dir =$this->cfg['data_dir'];
+	if (!file_exists( $dir )) {
+		echo "Create DATA directory\n";
+		mkdir( $dir );
 	}
  }
  
  //-----------------------------------------------------------------------------
  function cleanup() {
-	system( 'rm -f ' .$this->cfg['path'] .'/*.html' );
+	system( 'rm -f ' .$this->cfg['out_dir'] .'/*.html' );
 	system( 'rm -f ' .$this->cfg['cache_dir'] .'/*' );
  } 
 
@@ -111,7 +125,7 @@ class SPMS_Programme {
 			if ($this->cfg['wget']) {
 				$url ="$_url/xml2.session?sid=$code";
 //				echo "Get from $url\n";
-				system( "wget $wget_options -O $path/$xml_fname $url" );
+				system( "wget $wget_options -O $path/$xml_fname $url" );			
 			}
 			$xml =simplexml_load_file( "$path/$xml_fname" );
 			$this->load_session( $xml, $_verbose );
@@ -253,7 +267,7 @@ class SPMS_Programme {
 	foreach ($this->abstracts as $aid =>$A) {
 		if (strlen($A['text']) > 10) {
 			echo "$aid ";
-			$fpa =fopen( $this->cfg['path'] ."/abstract.$aid.html", 'w' );
+			$fpa =fopen( $this->cfg['out_dir'] ."/abstract.$aid.html", 'w' );
 			
 			$page =$A['text'] ."\n"
 				.($A['footnote'] ? "<hr noshade size='1' width='60%' /><small>" .str_replace( '**', '<br />**', $A['footnote'] ) ."</small>\n" : false)
@@ -272,7 +286,7 @@ class SPMS_Programme {
  function make_ics() {
 //http://www.elettra.trieste.it/events/2012/ipac/programme/programme.ics
 
-	$fp =fopen( $this->cfg['path'] .'/programme.ics', 'w' );
+	$fp =fopen( $this->cfg['out_dir'] .'/programme.ics', 'w' );
 
 //	$timezone =";TZID=CDT";
 	$timezone =false;
@@ -399,7 +413,7 @@ DESCRIPTION:Session: $S[title]
 
 		echo "Day $dayn - $day\n";
 
-		$fp_day =fopen( $this->cfg['path'] ."/day$dayn.html", 'w' );
+		$fp_day =fopen( $this->cfg['out_dir'] ."/day$dayn.html", 'w' );
 
 		$menu =false;
 

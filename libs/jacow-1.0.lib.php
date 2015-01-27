@@ -1,6 +1,6 @@
 <?php
 
-// 2014.05.28 by Stefano.Deiuri@Elettra.Eu
+// 2014.08.20 by Stefano.Deiuri@Elettra.Eu
 
 //----------------------------------------------------------------------------
 function file_write( $_filename, $_data, $_mode ='w' ) {
@@ -30,6 +30,8 @@ function file_write_json( $_filename, &$_obj ) {
 
 //----------------------------------------------------------------------------
 function file_read_json( $_filename, $_assoc =false ) {
+ if (!file_exists( $_filename )) return false;
+ 
  return json_decode( implode( '', file( $_filename )), $_assoc );
 }
 
