@@ -1,6 +1,6 @@
 <?php
 
-// 2015.01.27 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
+// 2015.04.17 by Stefano.Deiuri@Elettra.Eu & R.Mueller@gsi.de
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -105,7 +105,7 @@ class SPMS_Programme {
 	$path =$this->cfg['cache_dir'];
 	$xml_fname ='spms_summary.xml';
 	if ($this->cfg['wget']) system( "wget $wget_options -O $path/$xml_fname $_url/$xml_fname" );
-	$xml =simplexml_load_file( "$path/$xml_fname" );
+	$xml =simplexml_load_file( "$path/$xml_fname", 'SimpleXMLElement' );
 
 	$sessions =array();
 	
@@ -127,8 +127,23 @@ class SPMS_Programme {
 //				echo "Get from $url\n";
 				system( "wget $wget_options -O $path/$xml_fname $url" );			
 			}
-			$xml =simplexml_load_file( "$path/$xml_fname" );
-			$this->load_session( $xml, $_verbose );
+			
+			$xml_source =implode( "\n", file( "$path/$xml_fname" ));
+			$xml =simplexml_load_string( $xml_source, 'SimpleXMLElement', LIBXML_ERR_FATAL );
+
+			$err =libxml_get_last_error();
+			if ($err) {
+				echo "\n!! Session $code xml error on line " .$err->line .": " .trim($err->message) ."\n\n";
+				libxml_clear_errors();
+			}
+			
+			if (!$xml) {
+				$err =libxml_get_last_error();
+				echo "\n!! Session $code xml error on line " .$err->line .": " .trim($err->message) ."\n\n";
+				libxml_clear_errors();
+			} else {
+				$this->load_session( $xml, $_verbose );
+			}
 	
 			$n ++;
 		}
