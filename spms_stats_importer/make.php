@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-// 2018.05.07 bY Stefano.Deiuri@Elettra.Eu
+// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
 
 require( '../config.php' );
 require_lib( 'cws','1.0' );
@@ -33,7 +33,7 @@ if (!file_exists( APP_EDITORS_XML ) || filesize(APP_EDITORS_XML) < 999 || (time(
 
 	} else {
 		echo_error( "ERROR! (No data)" );
-		exit(2);
+//		exit(2);
 	}
 	
 } else {

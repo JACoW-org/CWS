@@ -1,15 +1,15 @@
 
-// 2018.05.07 bY Stefano.Deiuri@Elettra.Eu
+// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
 
 var cfg ={
-	version: 2,
+	version: 3,
 	mode: 'full',
 	lstore: true,
-	col1w: 1200,
+	col1w: 1080,
 	pageh: 1030,
 	change_page_delay: 10, // seconds
 	reload_data_delay: 30, // seconds	
-	history_date_start: '2018-04-25'
+	history_date_start: '2019-04-29'
 	};
 
 var n_page =3;
@@ -53,8 +53,6 @@ function removeLocalStorageObj( _id )	{
 }	
 	
 $(document).ready( function() {
-//	console.dir(navigator);
-	
 	if (navigator.platform.indexOf('arm') != -1) {
 		console.log( 'Enable SLOW mode!' )
 		cfg.mode ='slow';
@@ -71,6 +69,7 @@ $(document).ready( function() {
 			if (lcfg.version == cfg.version) {
 				console.log( "Load configuration from localStorage" );
 				cfg =lcfg;
+				
 			} else {
 				lcfg =undefined;
 			}
@@ -97,6 +96,7 @@ function show_page() {
 			case 'slow':
 				$('div[page=' +active_page +']').hide();
 				break;
+				
 			default:
 				$('div[page=' +active_page +']').fadeOut(duration);
 		}
@@ -109,15 +109,13 @@ function show_page() {
 	}
 	
 	active_page ++;
-//	if (active_page == 5 || (active_page == 3 && !rates_page_ok)) active_page =1;
 	if (active_page == (n_page+1)) active_page =1;
 
-//	active_page =5;
-	
 	switch (cfg.mode) {
 		case 'slow':
 			$('div[page=' +active_page +']').show();
 			break;
+			
 		default:
 			$('div[page=' +active_page +']').delay(duration).fadeIn(duration);
 	}
@@ -175,7 +173,6 @@ function load_data() {
 			}
 			
 			console.log( `Load data ${obj.ts}` );
-//			console.dir( obj );
 			
 			history_colors =obj.colors;
 			stats_title =obj.labels;
@@ -240,26 +237,18 @@ function load_data() {
 				}
 			}
 
-//			editors_qa.sort().reverse();
-//			console.dir(editors_qa);
-			
 			last_history_tm =Object.keys(stats_history).pop();
 			stats =stats_history[last_history_tm];
 			
 			data_ts =obj.ts;
 			
-//			console.log( stats );
-			
 			if (history_updated || init.stats) {
-//				ndots =stats.g +stats.y +stats.r +stats.files +stats.nofiles;
 				ndots =stats.total;
 			
 				update_history( stats_history );
 				update_stats( stats );
 				
 				if (stats.processed > 10) {
-//					console.dir( stats_history );
-
 					update_rates( stats_history );
 					update_editors( editors );
 					update_editors_qa( editors_qa );
@@ -301,7 +290,6 @@ function update_history( obj ) {
 			width: 1180,
 			height: cfg.pageh -20,
 			chartArea: { left: 100, right:0, top: 20, bottom: 20, width: '100%', height: '100%' },
-//			colors: ['#9cd6ff','#990099','#0000cc','#00cc00','#E6E600','#cc0000','#333'],
 			colors: history_colors,
 			vAxis: {title: 'Papers', minValue: 0, maxValue: 1500, ticks: [ 500, 1000, 1500 ] }
 			};
@@ -324,13 +312,10 @@ function update_history( obj ) {
 			t =tm2.split('-');
 			if (t[2] && t[3]) {
 				x =obj[tm2];
-//				x =Object.assign({}, obj[tm2]);
 				qaok =x.qaok;
 				if (qaok > x.g) qaok =x.g;
 				g =(x.g -qaok);
 				
-//				console.log( '      '+tm2 +' g:' +g +' files:' +x.files +' nofiles:' +x.nofiles +' qaok:' +x.qaok );
-	
 				d =new Date(t[0],(t[1]-1),t[2],t[3],59);
 
 				if (d > d_start)
@@ -344,7 +329,6 @@ function update_history( obj ) {
 						(x.r == 0 ? undefined : x.r), 
 						(x.nofiles == 0 ? undefined : x.nofiles), 
 						]);
-
 			}
 	}
 	
@@ -385,8 +369,10 @@ function update_stats( obj ) {
 		switch (id) {
 			case 'a': 
 				break;
+				
 			case 'y':
 				val =obj.g +obj.y +obj.r;
+				
 			case 'nofiles':
 			case 'files':
 				p =val *100 /ndots;
@@ -397,10 +383,12 @@ function update_stats( obj ) {
 				if (p && p < 1) percent ='<small>&lt;</small> 1<small>%</small>'; 
 				else if (percent) percent +='<small>%</small>';
 				break;
+				
 			case 'g':
 				percent =Math.round( obj.qaok *100 /val );
 				if (percent) percent +='<small>%</small>';
 				break;
+				
 			case 'r':
 				percent =Math.round( obj.processed *100 /(ndots -obj.nofiles) );
 				if (percent) percent =`(${percent}<small>% of available</small>)`;
@@ -422,9 +410,13 @@ function update_edots( obj ) {
 		
 		var i =0;
 		var html ='';
+		
+		var canvas_size =Math.min( cfg.col1w, cfg.pageh );
 	
-		dot_size =Math.floor( cfg.col1w /Math.sqrt( ndots ));
-		dots_x_row =Math.floor( cfg.col1w /dot_size );
+		dot_size =Math.floor( canvas_size /Math.sqrt( ndots ));
+		dots_x_row =Math.ceil( canvas_size /dot_size );
+		
+//		console.log( `dot_size =${dot_size}; dots_x_row =${dots_x_row}; ndots =${ndots};` );
 	
 		for (paper_id in obj) {
 			if (!i) html +="<tr>";
@@ -651,6 +643,7 @@ function rates_chart( _class, _title, _serie, _max_width ) {
 			case '12':
 				zero_code =String.fromCodePoint(0x1F374);
 				break;
+				
 			default:
 				zero_code ="&sdot;&sdot;&sdot;";
 				break;
