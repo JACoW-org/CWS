@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-// 2016.05.17 bY Stefano.Deiuri@Elettra.Eu
+// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
 
 require( 'config.php' );
 
@@ -31,6 +31,12 @@ foreach ($cws_config as $app =>$config) {
 				
 		if ($run) {
 			echo "\n" .date('r') ." ------------------------------------------------------------------------------\n";
+
+			if (!(fileperms( "$app/make.php" ) & 0x0008)) {
+				echo "Change file permission to 0755.\n";
+				chmod( "$app/make.php", 0755 );
+			}
+
 			echo "Run $app/make.php at $h:$m\n";
 			system( "cd " .ROOT_PATH ."/$app; ./make.php" );
 			echo "\n";

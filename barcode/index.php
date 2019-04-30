@@ -1,6 +1,6 @@
 <?php
 
-// 2016.10.14 bY Stefano.Deiuri@Elettra.Eu
+// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
 
 require( '../config.php' );
 require_lib( 'cws','1.0' );
@@ -44,8 +44,8 @@ switch (_G('cmd')) {
 		
 		$client2 =niceip( $client, '_' );
 		$png_fname =$client2 .'-qrcode.png';
-		$qrcode_png =APP_DATA_PATH .'/' .$png_fname;
-		$qrcode_url =APP_DATA_URL .'/' .$png_fname;
+		$qrcode_png =APP_QRCODE_PATH .'/' .$png_fname;
+		$qrcode_url =APP_QRCODE_URL .'/' .$png_fname;
 		
 		QRcode::png( $qrcode_content, $qrcode_png, 'L', 4 );
 		
@@ -85,8 +85,8 @@ switch (_G('cmd')) {
 		require( 'phpqrcode/qrlib.php' );
 		$pair_code =md5( time() );
 		$qrcode_content =str_replace( 'index.php', APP_APK, $script_url );
-		$qrcode_png =APP_DATA_PATH .'/qrcode_apk.png';
-		$qrcode_url =APP_DATA_URL .'/qrcode_apk.png';
+		$qrcode_png =APP_QRCODE_PATH .'/qrcode_apk.png';
+		$qrcode_url =APP_QRCODE_URL .'/qrcode_apk.png';
 		QRcode::png( $qrcode_content, $qrcode_png, 'L', 4 );
 		page( 'Download Address', "<center><br /><br /><b>Download address<br /><br /><img src='$qrcode_url' /><!-- $qrcode_content -->\n" );
 		return;
