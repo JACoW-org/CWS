@@ -1,0 +1,111 @@
+
+/* (0,98,42) */
+.primary {
+	color: #0062a3; 
+}
+
+.b_primary {
+	background-color: #0062a3;
+	color: white;
+}
+
+		
+/* (215,61,208) */
+.secondary {
+	color: #d73d06; 
+}
+
+.b_secondary {
+	background-color: #d73d06;
+	color: black;
+}
+
+		
+/* (255,65,19) */
+.r {
+	color: #FF4136; 
+}
+
+.b_r {
+	background-color: #FF4136;
+	color: black;
+}
+
+		
+/* (255,220,192) */
+.y {
+	color: #FFDC00; 
+}
+
+.b_y {
+	background-color: #FFDC00;
+	color: black;
+}
+
+		
+/* (46,204,196) */
+.g {
+	color: #2ECC40; 
+}
+
+.b_g {
+	background-color: #2ECC40;
+	color: black;
+}
+
+		
+/* (153,0,9) */
+.a {
+	color: #990099; 
+}
+
+.b_a {
+	background-color: #990099;
+	color: white;
+}
+
+		
+/* (85,85,85) */
+.nofiles {
+	color: #555555; 
+}
+
+.b_nofiles {
+	background-color: #555555;
+	color: white;
+}
+
+		
+/* (127,219,191) */
+.files {
+	color: #7FDBFF; 
+}
+
+.b_files {
+	background-color: #7FDBFF;
+	color: black;
+}
+
+		
+/* (0,0,0) */
+.removed {
+	color: #000000; 
+}
+
+.b_removed {
+	background-color: #000000;
+	color: white;
+}
+
+		
+/* (0,116,77) */
+.qaok {
+	color: #0074D9; 
+}
+
+.b_qaok {
+	background-color: #0074D9;
+	color: white;
+}
+
+		

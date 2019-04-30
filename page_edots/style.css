@@ -1,0 +1,127 @@
+body { 
+	margin: 0; 
+	overflow: hidden; 
+	background: #555; 
+	}
+	
+body, td, th { 
+	font-family: 'Roboto Mono', monospace;
+	}
+
+.b_nofiles { font-weight: normal; }
+.b_removed { text-decoration: line-through; }
+
+	
+#header {
+	height: 45px;
+	background: white;
+	clear: both;
+	font-size: 35px;
+	color: #666;
+	padding: 3px 0 7px 0;
+	}
+
+#title {
+	padding-left: 10px;
+	float: left;
+	}
+	
+#pages {
+	z-index: 11;
+	position: absolute;
+	top: 3px;
+	left: 910px;
+	display: block;
+	text-align: center;
+	width: 100px;
+	}	
+	
+#timer {
+	z-index: 10;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 55px;
+	width: 0px;
+	background: #ccff1b;
+	_border-radius: 30px;
+	}
+
+#timer2 {
+	z-index: 10;
+	position: absolute;
+	left: 920px;
+	top: -80px;
+	height: 80px;
+	width: 80px;
+	background: #ccff1b;
+	_border-radius: 40px;
+	}	
+	
+#clock {
+	position: absolute;
+	top: 3px;
+	right: 12px;
+	}	
+	
+#logo {
+	display: block;
+	float: left;
+	}
+
+div.page {
+	z-index: 11;
+	position: absolute;
+	background: #555;	
+	height: 1080px;
+	display: none;
+	border-top: 2px solid black;
+	}	
+	
+#qrcode {
+	z-index: 13;
+	position: absolute;
+	right: 15;
+	top: 882;
+	}	
+
+dot {
+	font-size: 15px;
+	display: block;
+	width: 153px;
+	float: left;
+	padding: 3px;
+	text-align: center;
+	vertical-align: middle;
+	border-bottom: 1px solid #444;
+	border-right: 1px solid #444;
+	font-weight: bold;
+	}
+
+dot.empty {
+	border-bottom: 1px solid #555;
+	border-right: 1px solid #555;
+	}
+	
+table.legend {
+	z-index: 12;
+	position: absolute;
+	top: 1027px;
+    width: 100%;
+	height: 54px;
+	border-top: 2px solid black;
+	border-spacing: 0;
+    border-collapse: collapse;
+	}	
+table.legend td {
+	width: 17%;
+	font-size: 18px;
+	font-weight: bold;
+    border: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+	}
+table.legend td:nth-child(1) {
+    border-left: 0;
+	}	
+	
