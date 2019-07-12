@@ -1,6 +1,6 @@
 <?php
 
-// 2017.05.15 by Stefano.Deiuri@Elettra.Eu
+// 2019.05.02 by Stefano.Deiuri@Elettra.Eu
 
 require( '../config.php' );
 require_lib( 'cws', '1.0' );
@@ -429,11 +429,20 @@ if (!need_file( APP_PP )) {
 	die;
 }
 
+if (!APP_PASSWORD) {
+	echo_error( "\n\nSet the login password in the config file!" );
+	die;
+}
+
+if (!APP_PP_MANAGER) {
+	echo_error( "\n\nSet the PosterPolice PersonID (pp_manager) in the config file!" );
+	die;
+}
+
 $APP->check_auth();
 
 $APP->load();
 
 $APP->handle();
-
 
 ?>

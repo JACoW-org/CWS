@@ -18,25 +18,6 @@ $script_url ="http://$_SERVER[SERVER_NAME]$_SERVER[SCRIPT_NAME]";
 
 switch (_G('cmd')) {
 	default:
-/*
-		if (!file_exists(APP_PO)) {
-			echo_error( "Unable to read db!\n\nTry to run spms_importer/make.php!" );
-			die;
-			$db =@file( DB_DOWNLOAD_URL );
-			
-			if (!$db) {
-				wecho_error( "Unable to download db! (".DB_DOWNLOAD_URL.")" );
-				die();
-			}
-			
-			$fp =fopen( APP_PO, 'w' );
-			fwrite( $fp, implode ('', $db ));
-			fclose( $fp );
-		}
-*/			
-		
-		require( 'phpqrcode/qrlib.php' );
-
 		$client =$_SERVER['REMOTE_ADDR'];
 		$pair_code =md5( $client .time() );
 		$actions_list ='Open,QA,Search,AuthorMaintenance,Test';
@@ -47,6 +28,7 @@ switch (_G('cmd')) {
 		$qrcode_png =APP_QRCODE_PATH .'/' .$png_fname;
 		$qrcode_url =APP_QRCODE_URL .'/' .$png_fname;
 		
+		require( '../libs/phpqrcode/qrlib.php' );
 		QRcode::png( $qrcode_content, $qrcode_png, 'L', 4 );
 		
 		$client_obj =array(
@@ -61,6 +43,7 @@ switch (_G('cmd')) {
 			."<br /><br /><a href='index.php?cmd=download'>Download App</a>"
 			."<br /><br /><a href='index.php?cmd=get'>Paper URL</a>"
 			."<!-- $qrcode_content -->\n" );
+			
 		return;
 		
 	case 'pair_confirm':
@@ -82,12 +65,14 @@ switch (_G('cmd')) {
 		return;
 	
 	case 'download':
-		require( 'phpqrcode/qrlib.php' );
 		$pair_code =md5( time() );
 		$qrcode_content =str_replace( 'index.php', APP_APK, $script_url );
 		$qrcode_png =APP_QRCODE_PATH .'/qrcode_apk.png';
 		$qrcode_url =APP_QRCODE_URL .'/qrcode_apk.png';
+		
+		require( '../libs/phpqrcode/qrlib.php' );
 		QRcode::png( $qrcode_content, $qrcode_png, 'L', 4 );
+		
 		page( 'Download Address', "<center><br /><br /><b>Download address<br /><br /><img src='$qrcode_url' /><!-- $qrcode_content -->\n" );
 		return;
 

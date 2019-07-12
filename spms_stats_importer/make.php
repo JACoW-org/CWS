@@ -1,7 +1,11 @@
 #!/usr/bin/php
 <?php
 
-// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
+/* bY Stefano.Deiuri@Elettra.Eu
+
+2019.05.21 - add paper history
+
+*/
 
 require( '../config.php' );
 require_lib( 'cws','1.0' );
@@ -101,12 +105,15 @@ $xml =simplexml_load_string( $xml_str );
 
 
 
-$stats =array( 'qaok' =>0, 'files' =>0, 'g' =>0, 'y' =>0, 'r' =>0, 'nofiles' =>0, 'processed' =>0, 'total' =>0 );
+$stats =array( 'qaok' =>0, 'files' =>0, 'a' =>0, 'g' =>0, 'y' =>0, 'r' =>0, 'nofiles' =>0, 'processed' =>0, 'total' =>0 );
 
 $now =time();
 
 if (file_exists( APP_EDOT )) $dots =file_read_json( APP_EDOT, true );
 else $dots =array();
+
+if (file_exists( APP_PAPERS_HISTORY )) $ph =file_read_json( APP_PAPERS_HISTORY, true );
+else $ph =array();
 
 $paper_id_list =array();
 
@@ -123,6 +130,8 @@ foreach ($xml->papers->paper as $paper) {
 	if ((string)$paper['QA'] == 'QAF') $paper_status ='a';
 	else if (!$paper_status) $paper_status ='nofiles';
 
+	$paper_status2 =$qaok ? 'qaok' : $paper_status;
+
 	if (!isset($po[$paper_id])) {
 		echo "\t# unset $paper_id\n";
 		
@@ -137,16 +146,28 @@ foreach ($xml->papers->paper as $paper) {
 			'qaok' =>$qaok, 
 			'ts' =>$now 
 			);
+
+		$ph[$paper_id][$now] =$paper_status2;
 	}
+
+	if (!isset($ph[$paper_id])) $ph[$paper_id][$now] =$paper_status2;
 }
 
 foreach ($dots as $paper_id =>$x) {
-//	if (!in_array( $paper_id, $paper_id_list )) unset( $dots[$paper_id] );
-	if (!in_array( $paper_id, $paper_id_list ) && $dots[$paper_id]['status'] != 'removed') $dots[$paper_id] =array( 'status' =>'removed', 'ts' =>$now );
+	if (!in_array( $paper_id, $paper_id_list ) && $dots[$paper_id]['status'] != 'removed') {
+		$dots[$paper_id] =array( 'status' =>'removed', 'ts' =>$now );
+		$ph[$paper_id][$now] ='removed';
+	}
 }
 
 echo "Write EDOT file (" .APP_EDOT .")... ";
 file_write_json( APP_EDOT, $dots );
+echo_ok();
+
+echo "\n";
+
+echo "Write PAPERS HISTORY file (" .APP_PAPERS_HISTORY .")... ";
+file_write_json( APP_PAPERS_HISTORY, $ph );
 echo_ok();
 
 echo "\n";

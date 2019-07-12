@@ -1,6 +1,6 @@
 <?php
 
-// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
+// 2019.05.02 bY Stefano.Deiuri@Elettra.Eu
 
 $cws_config =array(
 	'global' =>array(	
@@ -65,7 +65,7 @@ $cws_config =array(
 		'cron'				=>'*:00',
 		
 		'wget'				=>true,
-		'skip_sessions'		=>false,
+		'skip_sessions'			=>false,
 		
 		'tmp_path'			=>'{tmp_path}/spms',
 		
@@ -74,7 +74,8 @@ $cws_config =array(
 		'programme'			=>'{app_data_path}/programme.json',
 		'posters'			=>'{app_data_path}/posters.json',
 		'po'				=>'{app_data_path}/po.json',
-		'citations'			=>'{app_data_path}/export/citations.csv'
+		'citations'			=>'{out_path}/citations.csv',
+		'transp'			=>'{out_path}/transparencies.csv'
 	),
 	
 	//-------------------------------------------------------------------------------------------------
@@ -82,19 +83,20 @@ $cws_config =array(
 		'name'				=>'SPMS Statistics Importer',
 		'cron'				=>'*:*',
 		
-		'edot_xml_url'		=>'{spms_url}/edot.xml',
-		'editors_xml_url'	=>'{spms_url}/rpt_activity.xml',
+		'edot_xml_url'			=>'{spms_url}/edot.xml',
+		'editors_xml_url'		=>'{spms_url}/rpt_activity.xml',
 		
 		// in
 		'in_po'				=>'{data_path}/po.json',
 
 		// out
-		'editors_xml'		=>'{tmp_path}/editors.xml',
+		'editors_xml'			=>'{tmp_path}/editors.xml',
 		'editors'			=>'{data_path}/editors.json',
 		'edot_xml'			=>'{tmp_path}/edot.xml',
+		'papers_history'		=>'{data_path}/papers_history.json',
 		'edot'				=>'{data_path}/edots.json',
 		'stats'				=>'{data_path}/stats.json',
-		'stats_last'		=>'{data_path}/stats_last.json'
+		'stats_last'			=>'{data_path}/stats_last.json'
 	),
 		
 	//-------------------------------------------------------------------------------------------------
@@ -128,7 +130,7 @@ $cws_config =array(
 		
 		'xtract'			=>'filesuploaded,papercode',
 		'y_title'			=>'Papers',
-		'startdate'			=>'2019-03-01',
+		'startdate'			=>false,
 		
 		// in		
 		'chart_js'			=>'chart.js',
@@ -235,8 +237,8 @@ $cws_config =array(
 	'app_poster_police' =>array(
 		'name'			=>'App Poster Police',
 		'dummy_mode'	=>false,
-		'pp_manager'	=>84451, // PosterPolice PersonID
-		'password'		=>'3453453465',
+		'pp_manager'	=>false, // PosterPolice PersonID
+		'password'		=>false,
 
 		'verbose'		=>false,
 		'echo_mode'		=>'web',
@@ -254,16 +256,18 @@ $cws_config =array(
 	
 	//-------------------------------------------------------------------------------------------------
 	'page_edots' =>array(
-		'name'			=>'Paper Processing Status',
+		'name'				=>'Paper Processing Status',
 
-		'echo_mode'		=>'web',
+		'echo_mode'			=>'web',
 		
-		'default_page'	=>'{app}/index.php',
+		'default_page'		=>'{app}/index.php',
 		
-		'colors_css'	=>true,		
+		'colors_css'		=>true,		
+
+		'paper_status_url' 	=>false,
 
 		// in
-		'in_edot'		=>'{data_path}/edots.json'
+		'in_edot'			=>'{data_path}/edots.json'
 	),	
 		
 	//-------------------------------------------------------------------------------------------------

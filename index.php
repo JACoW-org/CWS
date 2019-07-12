@@ -28,6 +28,8 @@ $logo =file_exists( 'logo.jpg' ) ? "<img src='logo.jpg' border='0' align='absmid
 <head>
 	<title>CWS</title>
 	<link href='https://fonts.googleapis.com/css?family=Lato:400,300' rel='stylesheet' type='text/css'>
+	<link href='logo.jpg' rel='SHORTCUT ICON' />
+	
 	<style>
 	body {
 		background: #fff;

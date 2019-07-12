@@ -1,15 +1,13 @@
 
-// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
+// 2019.05.24 bY Stefano.Deiuri@Elettra.Eu
 
 var cfg ={
-	version: 3,
 	mode: 'full',
-	lstore: true,
 	col1w: 1080,
 	pageh: 1030,
 	change_page_delay: 10, // seconds
 	reload_data_delay: 30, // seconds	
-	history_date_start: '2019-04-29'
+	history_date_start: '2019-05-15'
 	};
 
 var n_page =3;
@@ -33,54 +31,21 @@ var init ={
 	history: true
 	};
 
-var local_torage_prefix ='postatus_';
-	
-//---------------------------------------------------------------------------------------------
-function getLocalStorageObj( _id ) {
-	json =localStorage.getItem( local_torage_prefix +_id );
-	if (json == undefined || json == '') return undefined;
-	return JSON.parse( json );
-}
 
-//---------------------------------------------------------------------------------------------
-function setLocalStorageObj( _id, _obj )	{
-	localStorage.setItem( local_torage_prefix +_id, JSON.stringify(_obj) );
-}	
 
-//---------------------------------------------------------------------------------------------
-function removeLocalStorageObj( _id )	{
-	localStorage.removeItem( local_torage_prefix +_id );
-}	
-	
 $(document).ready( function() {
 	if (navigator.platform.indexOf('arm') != -1) {
 		console.log( 'Enable SLOW mode!' )
 		cfg.mode ='slow';
 	}
 	
-	if (typeof localStorage == undefined) {
-		console.log( 'Disable localStorage' )
-		cfg.lstore =false;
-	
-	} else {
-		var lcfg =getLocalStorageObj( 'cfg' );
-		
-		if (lcfg != undefined) {
-			if (lcfg.version == cfg.version) {
-				console.log( "Load configuration from localStorage" );
-				cfg =lcfg;
-				
-			} else {
-				lcfg =undefined;
-			}
-		}
-		
-		if (lcfg == undefined) {
-			console.log( "Save configuration to localStorage" );
-			setLocalStorageObj( 'cfg', cfg );
-		} 
+	var url =new URL(window.location.href);
+	var page =url.searchParams.get("page");
+	if (page != null) {
+		change_page =false;
+		active_page =page;
 	}
-	
+
 	show_page();
 	setInterval( update_timer, 100 );	
 });
@@ -143,24 +108,6 @@ function update_timer() {
 
 //---------------------------------------------------------------------------------------------
 function load_data() {
-	if (cfg.lstore) {
-		var local_ts =getLocalStorageObj( 'local_ts' );
-		
-		if (local_ts != undefined && init.cache) {
-			console.log( 'Load data from localStorage ' +local_ts );
-			
-			data_ts =local_ts;
-			
-			for (id in localStorage) {
-				x =id.split('_');
-				
-				if (`${x[0]}_` == local_torage_prefix) {
-					if (x[1] == 'dot') edots[ x[2] ] =getLocalStorageObj( 'dot_'+x[2] );
-					else if (x[1] == 'history') stats_history[ x[2] ] =getLocalStorageObj( 'history_'+x[2] );
-				}
-			}
-		}
-	}
 	
 	init.cache =false;
 	
@@ -183,13 +130,9 @@ function load_data() {
 			if (obj.history != undefined) {
 				console.log( "  Process history" );
 
-				if (cfg.lstore) setLocalStorageObj( 'local_ts', obj.ts );
-
 				for (id in obj.history) {
 					console.log( '    ' +id );
 					stats_history[id] =obj.history[id];
-					
-					if (cfg.lstore) setLocalStorageObj( 'history_' +id, obj.history[id] );
 					history_updated =true;
 				}
 			}
@@ -197,19 +140,12 @@ function load_data() {
 			if (obj.edots != undefined) {
 				console.log( "  Process edots" );
 
-				if (cfg.lstore) setLocalStorageObj( 'local_ts', obj.ts );
-
 				for (id in obj.edots) {
 					status =obj.edots[id];
 					edots[id] =status;
 					
 					console.log( '    ' +id +' (' +status +')' );
 
-					if (cfg.lstore) {
-						if (status == 'removed') removeLocalStorageObj( 'dot_' +id );
-						else setLocalStorageObj( 'dot_' +id, status );
-					}
-					
 					if (status == 'removed') {
 						init.edots =true;
 					}
@@ -222,6 +158,7 @@ function load_data() {
 				console.log( "  Process editors" );
 
 				editors =[];
+				editors_qa =[];
 				
 				var i =0;
 				for (id in obj.editors) {
@@ -284,15 +221,15 @@ function update_history( obj ) {
 	console.log( "Update history" );
 	
 	var history_chart_options ={ 
-			isStacked: true,
-			legend: 'none', 
-			lineWidth: 2,
-			width: 1180,
-			height: cfg.pageh -20,
-			chartArea: { left: 100, right:0, top: 20, bottom: 20, width: '100%', height: '100%' },
-			colors: history_colors,
-			vAxis: {title: 'Papers', minValue: 0, maxValue: 1500, ticks: [ 500, 1000, 1500 ] }
-			};
+		isStacked: true,
+		legend: 'none', 
+		lineWidth: 2,
+		width: 1180,
+		height: cfg.pageh -20,
+		chartArea: { left: 100, right:0, top: 20, bottom: 20, width: '100%', height: '100%' },
+		colors: history_colors,
+		vAxis: {title: 'Papers', minValue: 0, maxValue: 1500, ticks: [ 500, 1000, 1500 ] }
+		};
 
 	var data =new google.visualization.DataTable();
 	data.addColumn('date','Date');
@@ -309,27 +246,27 @@ function update_history( obj ) {
 	var d, d_start =new Date( cfg.history_date_start );
 
 	for (tm2 in obj) {
-			t =tm2.split('-');
-			if (t[2] && t[3]) {
-				x =obj[tm2];
-				qaok =x.qaok;
-				if (qaok > x.g) qaok =x.g;
-				g =(x.g -qaok);
-				
-				d =new Date(t[0],(t[1]-1),t[2],t[3],59);
+		t =tm2.split('-');
+		if (t[2] && t[3]) {
+			x =obj[tm2];
+			qaok =x.qaok;
+			if (qaok > x.g) qaok =x.g;
+			g =(x.g -qaok);
+			
+			d =new Date( t[0], (t[1]-1), t[2], t[3], 59 );
 
-				if (d > d_start)
-					data.addRow([
-						d, 
-						(x.files == 0 ? undefined : x.files), 
-						(x.a == 0 ? undefined : x.a), 
-						(qaok == 0 ? undefined : qaok), 
-						(g == 0 ? undefined : g), 
-						(x.y == 0 ? undefined : x.y), 
-						(x.r == 0 ? undefined : x.r), 
-						(x.nofiles == 0 ? undefined : x.nofiles), 
-						]);
-			}
+			if (d > d_start)
+				data.addRow([
+					d, 
+					(x.files == 0 ? undefined : x.files), 
+					(x.a == 0 ? undefined : x.a), 
+					(qaok == 0 ? undefined : qaok), 
+					(g == 0 ? undefined : g), 
+					(x.y == 0 ? undefined : x.y), 
+					(x.r == 0 ? undefined : x.r), 
+					(x.nofiles == 0 ? undefined : x.nofiles), 
+					]);
+		}
 	}
 	
 	if (history_chart == false) history_chart =new google.visualization.AreaChart(document.getElementById('history'));
@@ -349,8 +286,8 @@ function update_stats( obj ) {
 		for (name in stats_title) {
 			html +=`
 <tr>
-	<th>${stats_title[name]}</th>
-	<th></th>
+	<th id='number_${name}_title'>${stats_title[name]}</th>
+	<th id='percent_${name}_title'></th>
 	</tr>
 <tr>
 	<td id='number_${name}' class='${name}'>0</td>
@@ -380,13 +317,20 @@ function update_stats( obj ) {
 
 //				console.log(`${id} - ${p} - ${percent}`);
 
-				if (p && p < 1) percent ='<small>&lt;</small> 1<small>%</small>'; 
+				if (p > 0 && p < 1) percent ='<small>&lt;</small> 1<small>%</small>'; 
 				else if (percent) percent +='<small>%</small>';
 				break;
 				
 			case 'g':
 				percent =Math.round( obj.qaok *100 /val );
-				if (percent) percent +='<small>%</small>';
+				if (percent) {
+					var qa_remaining =obj.g -obj.qaok;
+
+					if (percent == 100 && qa_remaining > 0) percent =99;
+					percent +='<small>%</small>';
+
+					$(`#percent_${id}_title`).html( 'QA OK ' +(qa_remaining > 0 ? `(-${qa_remaining})` :"") );		
+				}
 				break;
 				
 			case 'r':
@@ -395,7 +339,7 @@ function update_stats( obj ) {
 				break;
 		}
 		
-		if (percent) $('#percent_'+id).html( percent );		
+		if (percent) $(`#percent_${id}`).html( percent );		
 	}	
 }	
 

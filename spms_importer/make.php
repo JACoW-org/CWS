@@ -47,6 +47,7 @@ if ($ok) {
 	$SPMS->save_posters();
 	
 	$SPMS->export_citations();
+	$SPMS->export_transparencies();
 }
 
 print_r( $SPMS->programme['rooms'] );

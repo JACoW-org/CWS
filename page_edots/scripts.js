@@ -1,10 +1,9 @@
 
-// 2018.04.13 bY Stefano.Deiuri@Elettra.Eu
+// 2019.05.16 bY Stefano.Deiuri@Elettra.Eu
 
 var cfg ={
 	version: 4,
 	mode: 'full',
-	lstore: true,
 	change_page_delay: 10, // seconds
 	reload_data_delay: 120, // seconds	
 	cols: 12,
@@ -28,54 +27,10 @@ var init ={
 	edots: true,
 	};
 
-var local_storage_prefix ='edots_';
-	
-//---------------------------------------------------------------------------------------------
-function getLocalStorageObj( _id ) {
-	json =localStorage.getItem( local_storage_prefix +_id );
-	if (json == undefined || json == '') return undefined;
-	return JSON.parse( json );
-}
-
-//---------------------------------------------------------------------------------------------
-function setLocalStorageObj( _id, _obj )	{
-	localStorage.setItem( local_storage_prefix +_id, JSON.stringify(_obj) );
-}	
-
-//---------------------------------------------------------------------------------------------
-function removeLocalStorageObj( _id )	{
-	localStorage.removeItem( local_storage_prefix +_id );
-}	
-	
-	
-	
 $(document).ready( function() {
 	if (navigator.platform.indexOf('arm') != -1) {
 		console.log( 'Enable SLOW mode!' )
 		cfg.mode ='slow';
-	}
-	
-	if (typeof localStorage == undefined) {
-		console.log( 'Disable localStorage' )
-		cfg.lstore =false;
-	
-	} else if (cfg.lstore) {
-		var lcfg =getLocalStorageObj( 'cfg' );
-		
-		if (lcfg != undefined) {
-			if (lcfg.version == cfg.version) {
-				console.log( "Load configuration from localStorage" );
-				cfg =lcfg;
-				
-			} else {
-				lcfg =undefined;
-			}
-		}
-		
-		if (lcfg == undefined) {
-			console.log( "Save configuration to localStorage" );
-			setLocalStorageObj( 'cfg', cfg );
-		} 
 	}
 	
 	load_data();
@@ -138,22 +93,6 @@ function update_timer() {
 //---------------------------------------------------------------------------------------------
 function load_data() {
 	
-	if (cfg.lstore) {
-		var local_ts =getLocalStorageObj( 'local_ts' );
-		
-		if (local_ts != undefined && init.cache) {
-			console.log( `Load data from localStorage ${local_ts}` );
-			
-			data_ts =local_ts;
-			
-			for (id in localStorage) {
-				x =id.split('_');
-				
-				if (x[0] == 'edots' && x[1] == 'dot') edots[ x[2] ] =getLocalStorageObj( `dot_${x[2]}` );
-			}
-		}
-	}
-	
 	init.cache =false;
 	
 	$.getJSON( 'get_data.php', { ts: data_ts } )
@@ -171,10 +110,6 @@ function load_data() {
 			if (obj.edots != undefined) {
 				console.log( "  Process edots" );
 
-				if (cfg.lstore) {
-					setLocalStorageObj( 'local_ts', obj.ts );
-				}
-
 				for (id in obj.edots) {
 					status =obj.edots[id];
 					
@@ -185,11 +120,6 @@ function load_data() {
 					
 					console.log( `    ${id.substring(1)} (${status})` );
 
-					if (cfg.lstore) {
-						if (status == 'removed') removeLocalStorageObj( `dot_${id}` );
-						else setLocalStorageObj( `dot_${id}`, status );
-					}
-					
 					if (status == 'removed') {
 //						init.edots =true;
 					}

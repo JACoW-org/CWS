@@ -1,5 +1,5 @@
 <?php
-// 2018.04.12 bY Stefano.Deiuri@Elettra.Trieste.It
+// 2019.07.12 bY Stefano.Deiuri@Elettra.Trieste.It
 
 header('Content-type: text/html; charset: UTF-8');
 
@@ -24,21 +24,20 @@ require( '../config.php' );
 </head>
 
 <body>
-
-
 <?php 
 
-$day =isset($_GET['day']) ? $_GET['day'] : '1';
+$day =isset($_GET['day']) ? (int)$_GET['day'] : '1';
+
 $fname ="programme/day$day.html";
 
 if (file_exists($fname)) {
 	$page =implode( '', file( $fname ));
-
 	echo str_replace( array('index.php'), array('programme.php'), $page );
+	
+} else {
+	echo "<i>Wrong reference</i>";
 }
-else echo "<i>Wrong date</i>";
 
 ?>
-
 </body>
 </html>

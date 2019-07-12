@@ -1,6 +1,6 @@
 <?php
 
-// 2018.04.13 bY Stefano.Deiuri@Elettra.Eu
+// 2019.04.30 bY Stefano.Deiuri@Elettra.Eu
 
 error_reporting(E_ERROR);
 
@@ -12,6 +12,19 @@ $cfg =config( 'page_edots', true );
 $legend =false;
 foreach ($cfg['labels'] as $name =>$desc) {
 	$legend .="<td class='b_${name}'>${desc}</td>";
+}
+
+$qrcode_img ='../html/qrcode_app_paper_status.png';
+
+if (!file_exists( $qrcode_img )) {
+	require( '../libs/phpqrcode/qrlib.php' );
+	$qrcode_content =APP_PAPER_STATUS_URL ? APP_PAPER_STATUS_URL : ROOT_URL .'/app_paper_status';
+	QRcode::png( $qrcode_content, $qrcode_img, 'L', 4 );
+	
+	$png =imagecreatefrompng( $qrcode_img );
+	$bg = imagecolorat( $png, 0, 0 );
+	imagecolorset( $png, $bg, 85, 85, 85 );
+	imagepng( $png, $qrcode_img );
 }
 
 ?>
@@ -44,7 +57,7 @@ foreach ($cfg['labels'] as $name =>$desc) {
 <div class='page' page='6'></div>
 <div class='page' page='7'></div>
 </div>
-<img src='qrcode_paper_status.png' id='qrcode' />
+<img src='<?php echo $qrcode_img; ?>' id='qrcode' />
 <table class='legend'><tr>
 <? echo $legend; ?>
 </tr></table>

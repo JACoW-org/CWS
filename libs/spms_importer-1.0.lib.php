@@ -83,6 +83,75 @@ class SPMS_Importer extends CWS_OBJ {
 	}
  } 
  
+
+
+
+
+ function export_transparencies( $_fname =false ) {
+ 	$out_fname =$_fname ? $_fname : APP_TRANSP;
+	
+	$this->verbose( "# export_transparencies (" .$out_fname .")... ", 1, false );
+	$transparencies =false;
+
+	$n =array();
+
+	foreach ($this->programme['days'] as $day =>$odss) { // ObjDaySessions
+		foreach ($odss as $sid =>$os) { // ObjSession
+			if (is_array($os)) {
+				foreach ($os['papers'] as $pid =>$x) { // ObjPoster
+					if ($x['type'] != 'poster') {
+						list( $presenter, $presenter_affiliation ) =explode( '-', $x['presenter'] );
+						if (empty( $presenter )) $presenter =$x['author'];
+
+						$n_id =date( 'Y-m-d', $x['tsz_from'] ) .$os['room'];
+						if (!isset($n[$n_id])) $n[$n_id] =1;
+						else $n[$n_id] ++;
+
+						$name =str_pad( $n[$n_id], 2, '0', STR_PAD_LEFT ) .' ' .$pid .' ' .trim($presenter);
+
+						$transparencies[] =array(
+							'name' =>str_replace( '__', '_', strtr( $name, ' .', '__' )),
+							//'paper_code' =>$pid,
+							'date' =>date( 'Y-m-d', $x['tsz_from'] ),
+							'day' =>date( 'l', $x['tsz_from'] ),
+							'time' =>date( 'H:i', $x['tsz_from'] ),
+							'room' =>$os['location'],
+							'session' =>$os['title']
+							);
+
+						$n ++;
+
+//						print_r( $os );
+//						print_r( $transparencies );
+//						return;
+					}
+				}
+			}
+		}
+	}
+
+
+	if ($transparencies) {
+		$transparencies_sorted =array_msort( $transparencies, array( 'date' => SORT_ASC, 'room' =>SORT_ASC, 'time' =>SORT_ASC ));
+
+		$fp =fopen( $out_fname, 'w' );
+		$headers =true;
+		foreach ($transparencies_sorted as $x) {
+			if ($headers) {
+				fputcsv( $fp, array_keys( $x ) );
+				$headers =false;
+			}
+			fputcsv( $fp, $x );
+		}
+		fclose( $fp );
+
+		$this->verbose_ok( "(" .count($transparencies) .") " );
+		
+	} else {
+		$this->verbose_error( "(No data)" );
+	}
+ }
+
  //-----------------------------------------------------------------------------
  function export_citations( $_fname =false ) {
 	
@@ -303,7 +372,13 @@ class SPMS_Importer extends CWS_OBJ {
 			$chair_inst =false;
 		}
 
-		$room =preg_replace("/[^a-zA-Z0-9]+/", "", (string)$S->location);
+//		$location =isset( $this->cfg['manual_location'][$scode] ) ? $this->cfg['manual_location'][$scode] : (string)$S->location;
+		$location =function_exists( 'location_rename_f' )
+			? location_rename_f( (string)$S->location, $scode )
+			: (string)$S->location
+			;
+
+		$room =preg_replace("/[^a-zA-Z0-9]+/", "", $location );
 		if (isset($this->programme['rooms'][$room])) $this->programme['rooms'][$room] ++;
 		else $this->programme['rooms'][$room] =1;
 		
@@ -325,7 +400,7 @@ class SPMS_Importer extends CWS_OBJ {
 			'tsz_from' =>strtotime( "$date $sstime" ) +APP_TSZ_ADJUST,
 			'tsz_to' =>strtotime( "$date $setime" ) +APP_TSZ_ADJUST,
 			'room' =>$room,
-			'location' =>(string)$S->location,
+			'location' =>$location,
 			'papers' =>false
 			);
 
@@ -385,6 +460,11 @@ class SPMS_Importer extends CWS_OBJ {
 					if ($type == 'poster') {
 						$this->get_author( $P, 'Presenter', $author, $author_inst, false );
 						$session['papers'][$pcode]['presenter'] =($author ? "$author - $author_inst" : false);
+
+					} else {
+						$this->get_author( $P, 'Presenter', $author, $author_inst, false, true );
+						if (empty($author)) $this->get_author( $P, 'Speaker', $author, $author_inst, false, true );
+						$session['papers'][$pcode]['presenter'] =($author ? "$author - $author_inst" : false);
 					}
 					
 					if (!in_array( $pclass, $this->programme['classes'] )) array_push( $this->programme['classes'], $pclass );
@@ -398,10 +478,10 @@ class SPMS_Importer extends CWS_OBJ {
  }
 
  //-----------------------------------------------------------------------------
- function get_author( &$_P, $_type, &$_author, &$_author_inst, $_full_inst =true ) {
+ function get_author( &$_P, $_type, &$_author, &$_author_inst, $_full_inst =true, $_full_name =false ) {
     foreach ($_P->contributors->children() as $A) {
 		if ($A->attributes()->type == $_type) {
-			$_author =$A->iname .' ' .$A->lname;
+			$_author =($_full_name ? $A->fname : $A->iname) .' ' .$A->lname;
 			
 			if ($_full_inst) {
 				$_author_inst =(string)$A->institutions->institute->full_name;
@@ -642,5 +722,52 @@ class SPMS_Importer extends CWS_OBJ {
  }
 
 }
+
+
+
+
+
+function array_orderby()
+{
+    $args = func_get_args();
+    $data = array_shift($args);
+  foreach ($args as $n => $field) {
+           if (is_string($field)) {
+                $tmp = array();
+	            foreach ($data as $key => $row)
+                    $tmp[$key] = $row[$field];
+	                $args[$n] = $tmp;
+            }
+        }
+	    $args[] = &$data;
+       call_user_func_array('array_multisort', $args);
+    return array_pop($args);
+}
+
+function array_msort($array, $cols)
+{
+    $colarr = array();
+        foreach ($cols as $col => $order) {
+	        $colarr[$col] = array();
+		        foreach ($array as $k => $row) { $colarr[$col]['_'.$k] = strtolower($row[$col]); }
+			    }
+			        $eval = 'array_multisort(';
+				    foreach ($cols as $col => $order) {
+				            $eval .= '$colarr[\''.$col.'\'],'.$order.',';
+					        }
+						    $eval = substr($eval,0,-1).');';
+						        eval($eval);
+							    $ret = array();
+							        foreach ($colarr as $col => $arr) {
+								        foreach ($arr as $k => $v) {
+									            $k = substr($k,1);
+										                if (!isset($ret[$k])) $ret[$k] = $array[$k];
+												            $ret[$k][$col] = $array[$k][$col];
+													            }
+														        }
+															    return $ret;
+
+															    }
+
 
 ?>
