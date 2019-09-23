@@ -38,10 +38,9 @@ body, td, th {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	height: 55px;
-	width: 0px;
+	height: 5px;
+	width: 100%;
 	background: #ccff1b;
-	_border-radius: 30px;
 	}
 	
 #clock {
@@ -49,6 +48,11 @@ body, td, th {
 	top: 3px;
 	right: 12px;
 	}	
+	
+.npages,	
+.clock_sec {
+	color:#bbb;
+}	
 	
 #logo {
 	display: block;

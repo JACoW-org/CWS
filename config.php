@@ -1,6 +1,6 @@
 <?php
 
-// 2019.05.02 bY Stefano.Deiuri@Elettra.Eu
+// 2019.09.06 bY Stefano.Deiuri@Elettra.Eu
 
 $cws_config =array(
 	'global' =>array(	
@@ -13,6 +13,7 @@ $cws_config =array(
 		'root_url'			=>'', // https://www.test.eu/ipac_xx
 		'root_path'			=>'', // /var/www/html/ipac_xx';
 
+		'location'			=>'', // Malmö, Sweden
 		'date_start'		=>'', // 2099-05-19
 		'date_end'			=>'', // 2099-05-23
 
@@ -256,15 +257,21 @@ $cws_config =array(
 	
 	//-------------------------------------------------------------------------------------------------
 	'page_edots' =>array(
-		'name'				=>'Paper Processing Status',
+		'name'				=>'Paper Processing Status (Dotting Board)',
 
 		'echo_mode'			=>'web',
 		
-		'default_page'		=>'{app}/index.php',
+		'default_page'		=>'{app}/index.html',
 		
 		'colors_css'		=>true,		
+		
+		'change_page_delay' =>10, // seconds
+		'reload_data_delay' =>120, // seconds			
+		'board_rows'		=>false,
+		'board_cols'		=>false,
 
 		'paper_status_url' 	=>false,
+		'paper_status_qrcode' 	=>false,
 
 		// in
 		'in_edot'			=>'{data_path}/edots.json'
@@ -278,7 +285,9 @@ $cws_config =array(
 
 		'default_page'	=>'{app}/index.html',
 
-		'colors_css'	=>true,		
+		'colors_css'	=>true,
+		
+		'history_date_start' =>false,
 		
 		'label_g'		=>'GREEN DOT (successfully processed)',
 		'label_y'		=>'YELLOW DOT (wait author approval)',

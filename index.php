@@ -1,5 +1,7 @@
 <?
 
+// 2019.09.06 bY Stefano.Deiuri@Elettra.Eu
+
 require( 'config.php' );
 
 if (ROOT_PATH == '.' || ROOT_PATH == '') {
@@ -23,10 +25,18 @@ foreach ($cws_config as $app =>$x) {
 
 $logo =file_exists( 'logo.jpg' ) ? "<img src='logo.jpg' border='0' align='absmiddle' />" : $cws_config['global']['conf_name'];
 
+$ds =explode( ' ', date( 'Y M j', strtotime( $cws_config['global']['date_start'] )));
+$de =explode( ' ', date( 'Y M j', strtotime( $cws_config['global']['date_end'] )));
+
+if ($ds[1] == $de[1]) $dates ="$ds[2] - $de[2] $ds[1] $ds[0]";
+else $dates ="$ds[2]/$ds[1] - $de[2]/$de[1], $ds[0]";
+
+if (!empty( $cws_config['global']['location'] )) $dates =$cws_config['global']['location'] .' > ' .$dates;
+
 ?>
 <html>
 <head>
-	<title>CWS</title>
+	<title><?php echo $cws_config['global']['conf_name']; ?> CWS</title>
 	<link href='https://fonts.googleapis.com/css?family=Lato:400,300' rel='stylesheet' type='text/css'>
 	<link href='logo.jpg' rel='SHORTCUT ICON' />
 	
@@ -46,7 +56,9 @@ $logo =file_exists( 'logo.jpg' ) ? "<img src='logo.jpg' border='0' align='absmid
 </head>
 
 <body>
-<h1>JACoW Conference Website Scripts for <a href='<? echo $cws_config['global']['conf_url']; ?>' target='_blank'><? echo $logo; ?> </a></h1>
+<a href='<? echo $cws_config['global']['conf_url']; ?>' target='_blank'><? echo $logo; ?></a>
+<h1>JACoW Conference Website Scripts for <? echo $cws_config['global']['conf_name']; ?></h1>
+<h4><? echo $dates; ?></h4>
 <ul>
 <?
 echo $content;

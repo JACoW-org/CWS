@@ -1,18 +1,24 @@
 <?php
 
-// 2018.05.07 bY Stefano.Deiuri@Elettra.Eu
+// 2019.08.23 bY Stefano.Deiuri@Elettra.Eu
 
 error_reporting(E_ERROR);
 
 require( '../config.php' );
 require_lib( 'cws', '1.0' );
 
+define( 'CFG_VERSION', 1 );
+
 if (!$cfg =config( 'page_po_status', true )) {
 	echo json_encode(array( 'error' => true ));
 	die;
 }
 	
-$ret =array();
+$ret =array(
+	'cfg' =>array(
+		'version' =>CFG_VERSION
+		)
+	);
 	
 $editors =file_read_json( APP_EDITORS, true );
 $dots =file_read_json( APP_EDOT, true );
@@ -28,9 +34,17 @@ foreach ($dots as $paper_id =>$p) {
 		$ret['edots'][$paper_id] =$class;
 	}
 }
-
 	
 if (!$ts_rqst) {
+	$ret['cfg'] =array(
+		'version' =>CFG_VERSION,
+		'conf_name' =>CONF_NAME,
+		'change_page_delay' =>10, // seconds
+		'reload_data_delay' =>30, // seconds	
+		'history_date_start' =>APP_HISTORY_DATE_START
+		);
+		
+		
 	$ret['history'] =$stats_db;
 
 } else {

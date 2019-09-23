@@ -1,13 +1,14 @@
 
-// 2019.05.24 bY Stefano.Deiuri@Elettra.Eu
+// 2019.09.06 bY Stefano.Deiuri@Elettra.Eu
 
 var cfg ={
+	title: 'Proceeding Office Status',
 	mode: 'full',
 	col1w: 1080,
 	pageh: 1030,
 	change_page_delay: 10, // seconds
 	reload_data_delay: 30, // seconds	
-	history_date_start: '2019-05-15'
+	history_date_start: '2019-08-21'
 	};
 
 var n_page =3;
@@ -15,6 +16,7 @@ var active_page =0;
 var change_page =true;
 
 var history_chart =false;
+var history_max_total =100;
 
 var rates_page_ok =false;
 
@@ -25,7 +27,7 @@ var data_ts =0;
 var stats_history =[], stats_title ={}, history_colors =[], stats =[], edots =[], editors =[], editors_qa =[];
 
 var init ={
-	cache: true,
+	page: true,
 	stats: true,
 	edots: true,
 	history: true
@@ -35,7 +37,7 @@ var init ={
 
 $(document).ready( function() {
 	if (navigator.platform.indexOf('arm') != -1) {
-		console.log( 'Enable SLOW mode!' )
+		console.log( 'Enable SLOW mode!' );
 		cfg.mode ='slow';
 	}
 	
@@ -47,11 +49,14 @@ $(document).ready( function() {
 	}
 
 	show_page();
-	setInterval( update_timer, 100 );	
+	setInterval( update_clock, 500 );	
 });
 
 //---------------------------------------------------------------------------------------------
 function show_page() {
+	$('#timer').css( 'width', '100%' );
+	$('#timer').animate( { width: 0 }, { duration: cfg.change_page_delay *1000, queue: false } );	
+	
 	duration =500;
 	
 	console.log( 'Show page ' +active_page );
@@ -88,29 +93,16 @@ function show_page() {
 	if (n_page) $('#activepage').html( active_page ); 
 
 	setTimeout( show_page, cfg.change_page_delay *1000 );
-
-	timer =cfg.change_page_delay *10;
-	$('#timer').css( 'left', 910 );
 }
 
 //---------------------------------------------------------------------------------------------
-function update_timer() {
- var w =Math.floor((timer *20) /cfg.change_page_delay);
- var l =960 -w/2;
- $('#timer').css( 'width', w );
- $('#timer').css( 'left', l );
- 
- timer --;
- 
+function update_clock() {
  var d =new Date();
- $('#clock').html( `${pad(d.getHours())}:${pad(d.getMinutes())}<span style='color:#bbb;'>:${pad(d.getSeconds())}</span>` );
+ $('#clock').html( `${pad(d.getHours())}:${pad(d.getMinutes())}<span class='clock_sec'>:${pad(d.getSeconds())}</span>` );
 }
 
 //---------------------------------------------------------------------------------------------
 function load_data() {
-	
-	init.cache =false;
-	
 	$.getJSON( 'get_data.php', { ts: data_ts } )
 		.done(function(obj) {
 			if (obj.error) {
@@ -120,6 +112,29 @@ function load_data() {
 			}
 			
 			console.log( `Load data ${obj.ts}` );
+			
+			if (init.page) {
+				init.page =false;
+				
+				if (obj.cfg != undefined) {
+					console.log( `Update configuration v${obj.cfg.version}` );
+					for (id in obj.cfg) {
+						cfg[id] =obj.cfg[id];
+						console.log( `cfg.${id} =${obj.cfg[id]}` );
+					}
+					
+					console.dir( cfg );
+				}
+				
+				document.title =`${cfg.conf_name} ${cfg.title}`;
+				$('#title').html( `<b>${cfg.conf_name}</b> ${cfg.title}` );
+			}
+			
+			if (obj.cfg.version != cfg.version) {
+				console.log( 'RELOAD PAGE!' );
+				location.reload();
+				return;
+			}			
 			
 			history_colors =obj.colors;
 			stats_title =obj.labels;
@@ -133,6 +148,7 @@ function load_data() {
 				for (id in obj.history) {
 					console.log( '    ' +id );
 					stats_history[id] =obj.history[id];
+					history_max_total =Math.max( history_max_total, stats_history[id].total );
 					history_updated =true;
 				}
 			}
@@ -219,6 +235,9 @@ function load_data() {
 //---------------------------------------------------------------------------------------------
 function update_history( obj ) {
 	console.log( "Update history" );
+	console.dir( obj );
+	
+	var max_value =Math.ceil( (history_max_total +10) / 100 ) *100;
 	
 	var history_chart_options ={ 
 		isStacked: true,
@@ -228,7 +247,7 @@ function update_history( obj ) {
 		height: cfg.pageh -20,
 		chartArea: { left: 100, right:0, top: 20, bottom: 20, width: '100%', height: '100%' },
 		colors: history_colors,
-		vAxis: {title: 'Papers', minValue: 0, maxValue: 1500, ticks: [ 500, 1000, 1500 ] }
+		vAxis: {title: 'Papers', minValue: 0, maxValue: max_value }
 		};
 
 	var data =new google.visualization.DataTable();

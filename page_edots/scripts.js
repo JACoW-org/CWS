@@ -1,29 +1,24 @@
 
-// 2019.05.16 bY Stefano.Deiuri@Elettra.Eu
+// 2019.09.06 bY Stefano.Deiuri@Elettra.Eu
 
 var cfg ={
-	version: 4,
+	title: 'Paper Processing Status',
 	mode: 'full',
 	change_page_delay: 10, // seconds
 	reload_data_delay: 120, // seconds	
-	cols: 12,
-	rows: 36
+	pages: 1,
+	cols: 10,
+	rows: 33
 	};
 	
 var active_page =0;
 
-var ndots =0;
-
 var data_ts =0;
-
-var timer =0;
-
-var n_page =0;
 
 var edots =[];
 
 var init ={
-	cache: true,
+	page: true,
 	edots: true,
 	};
 
@@ -32,69 +27,58 @@ $(document).ready( function() {
 		console.log( 'Enable SLOW mode!' )
 		cfg.mode ='slow';
 	}
-	
+		
 	load_data();
 	show_page();
-	setInterval( update_timer, 100 );
+	setInterval( update_clock, 500 );
 	});
 
 //---------------------------------------------------------------------------------------------
 function show_page() {
+	$('#timer').css( 'width', '100%' );
+	$('#timer').animate( { width: 0 }, { duration: cfg.change_page_delay *1000, queue: false } );
+	
 	duration =500;
 	
-	console.log( `Show page ${active_page}` );
-	
-	if (active_page) {
+	if (cfg.pages > 1) {
+		console.log( `Show page ${active_page}` );
+		
+		if (active_page) {
+			switch (cfg.mode) {
+				case 'slow':
+					$(`div[page=${active_page}]`).hide();
+					break;
+					
+				default:
+					$(`div[page=${active_page}]`).fadeOut(duration);
+			}
+		}
+		
+		active_page ++;
+		if (active_page == (cfg.pages+1)) active_page =1;
+
 		switch (cfg.mode) {
 			case 'slow':
-				$(`div[page=${active_page}]`).hide();
+				$(`div[page=${active_page}]`).show();
 				break;
 			default:
-				$(`div[page=${active_page}]`).fadeOut(duration);
+				$(`div[page=${active_page}]`).delay(duration).fadeIn(duration);
 		}
+		
+		if (cfg.pages) $('#activepage').html( active_page ); 
 	}
-	
-	active_page ++;
-	if (active_page == (n_page+1)) active_page =1;
-
-	switch (cfg.mode) {
-		case 'slow':
-			$(`div[page=${active_page}]`).show();
-			break;
-		default:
-			$(`div[page=${active_page}]`).delay(duration).fadeIn(duration);
-	}
-	
-	if (n_page) $('#activepage').html( active_page ); 
 
 	setTimeout( show_page, cfg.change_page_delay *1000 );
-
-	timer =cfg.change_page_delay *10;
-	$('#timer').css( 'left', 910 );
-//	$('#timer2').css( 'top', -80 );
 }
 
 //---------------------------------------------------------------------------------------------
-function update_timer() {
- var w =Math.floor((timer *20) /cfg.change_page_delay);
- var l =960 -w/2;
- $('#timer').css( 'width', w );
- $('#timer').css( 'left', l );
- 
-// var y =-80 +(130 - Math.floor((timer *13) /cfg.change_page_delay));
-// $('#timer2').css( 'top', y );
- 
- timer --;
- 
+function update_clock() {
  var d =new Date();
  $('#clock').html( `${pad(d.getHours())}:${pad(d.getMinutes())}<span style='color:#bbb;'>:${pad(d.getSeconds())}</span>` );
 }
 
 //---------------------------------------------------------------------------------------------
 function load_data() {
-	
-	init.cache =false;
-	
 	$.getJSON( 'get_data.php', { ts: data_ts } )
 		.done(function(obj) {
 			if (obj.error) {
@@ -104,6 +88,29 @@ function load_data() {
 			}
 			
 			console.log( 'Load data ' +obj.ts );
+			
+			if (init.page) {
+				init.page =false;
+				
+				if (obj.cfg != undefined) {
+					console.log( `Update configuration v${obj.cfg.version}` );
+					for (id in obj.cfg) {
+						cfg[id] =obj.cfg[id];
+						console.log( `cfg.${id} =${obj.cfg[id]}` );
+					}
+
+					console.dir( cfg );
+				}
+				
+				document.title =`${cfg.conf_name} ${cfg.title}`;
+				$('#title').html( `<b>${cfg.conf_name}</b> ${cfg.title}` );
+			}
+			
+			if (obj.cfg.version != cfg.version) {
+				console.log( 'RELOAD PAGE!' );
+				location.reload();
+				return;
+			}
 
 			var edots_updated =false;
 			
@@ -123,7 +130,6 @@ function load_data() {
 					if (status == 'removed') {
 //						init.edots =true;
 					}
-
 					
 					edots_updated =true;
 				}
@@ -155,27 +161,57 @@ function update_edots( obj ) {
 	console.log( "Update edots" );
 	
 	if (init.edots) {
-		console.log( "   Draw dots" );
 		init.edots =false;
 		
 		var i =0;
 		var page =1;
 		var html ='';
-		var rows =[];
-		var row_id;
+		var id;
 		
 		var dpp =cfg.cols *cfg.rows; // dot per page
 	
-		var empty_cell ="<dot class='empty'>&nbsp;</dot>";
+		console.log( `   Draw dots (${cfg.cols} * ${cfg.rows} = ${dpp})` );
+		
+		html ="<div class='page' page='1' style='display:block;'></div>";
+		if (cfg.pages > 1) {
+			for (i =0; i <cfg.pages; i++) {
+				html +=`<div class='page' page='${i +2}'></div>`;
+				
+			}
+		}
+		$('#edots').html( html );
+
 	
+		var ids =[];
 		for (paper_id in obj) {
-	
+			if (obj[paper_id] != 'removed') ids.push( paper_id );
+		}
+
+		for (page =0; page <cfg.pages; page ++) {
+			var id;
+			html ="<table class='edots'>";
+			for (var row =0; row <cfg.rows; row ++) {
+				html +="<tr>";
+				for (var col =0; col <cfg.cols; col ++) {
+					i =row +(col *cfg.rows) +(dpp *page);
+					id =ids[i];
+					if (i <ids.length) html +=`<td class='b_${obj[id]}' id='${id}'>${id.substring(1)}</td>`;
+					else html +="<td class='empty'>&nbsp;</td>";
+				}
+				html +="</tr>";
+			}
+			html +="</table>";
+			
+			$(`div[page=${page +1}]`).html( html );
+		}
+/*	
+		for (paper_id in obj) {
 			status =obj[paper_id];
 			
 			if (status != 'removed') {
 				if (i == dpp) {
 					html ='';
-					for (j =0; j <cfg.rows; j++) html +=rows[j] +(j > (cfg.rows-7) ?  empty_cell : '');
+					for (j =0; j <cfg.rows; j++) html +=rows[j] +(j > cfg.rows ?  empty_cell : '');
 					
 					$(`div[page=${page}]`).html( html );
 
@@ -184,24 +220,15 @@ function update_edots( obj ) {
 					page ++;
 				}
 
-/*				
-				if (status == '') status ='nofiles';
-				else if (status == 'qaok') status ='g';
-*/				
 				html +=`<dot class='b_${status}' id='${paper_id}'>${paper_id.substring(1)}</dot>`;
 				
 				row_id =i%cfg.rows;
 				
 				if (rows[ row_id ] == undefined) rows[ i%cfg.rows ] ='';
 				
-//				if (i >= (cfg.rows-4) && i < cfg.rows)
-	
-
 				rows[ i%cfg.rows ] +=`<dot class='b_${status}' id='${paper_id}'>${paper_id.substring(1)}</dot>`;
 				
 				i ++;
-				
-				if (dpp -i < 7) i =dpp;
 			}
 		}
 
@@ -219,10 +246,24 @@ function update_edots( obj ) {
 			$(`div[page=${page}]`).html( html );
 		}
 	
-		n_page =page;
-		
-		$('#activepage').html( 1 ); 
-		$('#npages').html( `/${n_page}` ); 
+		var dot_width =Math.ceil(1920 / cfg.cols) -7;
+		$('dot').css( 'width', `${dot_width}px` );
+		console.log( `dot width = ${dot_width}` );
+*/		
+		var html ="<table class='legend'><tr>";
+		for (var legend_item_name in cfg.legend) {
+			html +=`"<td class='b_${legend_item_name}'>${cfg.legend[legend_item_name]}</td>"`;
+		}
+		html +="</tr></table>";
+		$('#legend').html( html );
+	
+		if (cfg.pages > 1) {
+			$('#activepage').html( 1 ); 
+			$('#npages').html( `/${cfg.pages}` ); 
+			
+		} else {
+			$('#pages').hide();
+		}
 	
 	} else {
 		for (paper_id in obj) {
